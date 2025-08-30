@@ -8,107 +8,33 @@ const {
   hideBlog,
   deleteBlog,
   getBlogById,
+  incrementViews,
+  toggleLike,
+  addComment,
+  getAnalytics
 } = require("../controllers/blog.controller");
-const Blog = require("../models/blog");
-
-const blogCtrl = require("../controllers/blog.controller");
-
-const { verifyToken } = require("../middlewares/auth.middleware");
-const User = require("../models/user");
+const { verifyToken, isAdmin } = require("../middlewares/auth.middleware");
 
 const router = express.Router();
 
-// middleware to check admin
-const verifyAdmin = async (req, res, next) => {
-  try {
-    if (!req.user) return res.status(401).json({ message: "Unauthorized" });
-    const user = await User.findById(req.user.id);
-    if (!user || user.role !== "admin") {
-      return res.status(403).json({ message: "Forbidden: Admins only" });
-    }
-    next();
-  } catch (err) {
-    console.error("Admin check failed:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-};
+// -------- User Routes --------
+router.post("/", verifyToken, createBlog);   // Submit blog (pending review)
+router.get("/", getApprovedBlogs);           // Public - Approved blogs
+router.get("/:id", getBlogById);             // Public - Single blog by ID
 
-// User routes
-router.post("/", verifyToken, createBlog);   // submit blog (pending)
-router.get("/", getApprovedBlogs);           // approved blogs (homepage)
+// -------- Blog Interactions --------
+router.put("/:id/views", incrementViews);     // Increment views
+router.put("/:id/like", toggleLike);          // Like/unlike blog
+router.post("/:id/comments", addComment);     // Add comment
 
-// ⚠️ put this BEFORE /:id
-router.get("/pending", verifyToken, verifyAdmin, getPendingBlogs);
+// -------- Admin Routes --------
+router.get("/pending", verifyToken, isAdmin, getPendingBlogs);
+router.patch("/:id/approve", verifyToken, isAdmin, approveBlog);
+router.patch("/:id/reject", verifyToken, isAdmin, rejectBlog);
+router.patch("/:id/hide", verifyToken, isAdmin, hideBlog);
+router.delete("/:id", verifyToken, isAdmin, deleteBlog);
 
-// single blog by id
-router.get("/:id", getBlogById);
-
-// Admin routes
-router.patch("/:id/approve", verifyToken, verifyAdmin, approveBlog);
-router.patch("/:id/reject", verifyToken, verifyAdmin, rejectBlog);
-router.patch("/:id/hide", verifyToken, verifyAdmin, hideBlog);
-router.delete("/:id", verifyToken, verifyAdmin, deleteBlog);
-
-// Create Blog
-router.post("/", async (req, res) => {
-  try {
-    const blog = await Blog.create(req.body);
-    res.status(201).json(blog);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// Get all blogs
-router.get("/", async (req, res) => {
-  const blogs = await Blog.find();
-  res.json(blogs);
-});
-
-// Increment view count
-router.post("/:id/view", async (req, res) => {
-  const blog = await Blog.findByIdAndUpdate(
-    req.params.id,
-    { $inc: { views: 1 } },
-    { new: true }
-  );
-  res.json({ views: blog.views });
-});
-
-// Like blog
-router.post("/:id/like", async (req, res) => {
-  const blog = await Blog.findByIdAndUpdate(
-    req.params.id,
-    { $inc: { likes: 1 } },
-    { new: true }
-  );
-  res.json({ likes: blog.likes });
-});
-
-// Comment on blog
-router.post("/:id/comment", async (req, res) => {
-  const { text } = req.body;
-  const blog = await Blog.findByIdAndUpdate(
-    req.params.id,
-    { $push: { comments: text } },
-    { new: true }
-  );
-  res.json({ comments: blog.comments });
-});
-
-// Analytics Dashboard
-router.get("/analytics", async (req, res) => {
-  const analytics = await Blog.find({}, "title views likes comments");
-  res.json(analytics);
-});
-
-// views
-router.put("/:id/views", blogCtrl.incrementViews);
-
-// likes
-router.put("/:id/like", blogCtrl.toggleLike);
-
-// comments
-router.post("/:id/comments", blogCtrl.addComment);
+// -------- Analytics (Admin) --------
+router.get("/analytics/all", verifyToken, isAdmin, getAnalytics);
 
 module.exports = router;
