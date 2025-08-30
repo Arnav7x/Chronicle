@@ -6,6 +6,7 @@ import { Toaster } from "react-hot-toast";
 import HomePage from "./pages/home";
 import CreateBlog from "./pages/CreateBlog";
 import AdminDashboard from "./pages/AdminDashboard";
+import Analytics from "./pages/Analytics";
 import AdminRoute from "./components/AdminRoutes";   // ✅ protect admin
 import BlogDetails from "./pages/BlogDetails";       // ✅ new page
 
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/analytics" element={<Analytics />} />
           <Route path="/blog/:id" element={<BlogDetails />} /> {/* ✅ blog details */}
 
           {/* Authenticated user routes */}

@@ -46,4 +46,57 @@ router.patch("/:id/reject", verifyToken, verifyAdmin, rejectBlog);
 router.patch("/:id/hide", verifyToken, verifyAdmin, hideBlog);
 router.delete("/:id", verifyToken, verifyAdmin, deleteBlog);
 
+// Create Blog
+router.post("/", async (req, res) => {
+  try {
+    const blog = await Blog.create(req.body);
+    res.status(201).json(blog);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Get all blogs
+router.get("/", async (req, res) => {
+  const blogs = await Blog.find();
+  res.json(blogs);
+});
+
+// Increment view count
+router.post("/:id/view", async (req, res) => {
+  const blog = await Blog.findByIdAndUpdate(
+    req.params.id,
+    { $inc: { views: 1 } },
+    { new: true }
+  );
+  res.json(blog);
+});
+
+// Like blog
+router.post("/:id/like", async (req, res) => {
+  const blog = await Blog.findByIdAndUpdate(
+    req.params.id,
+    { $inc: { likes: 1 } },
+    { new: true }
+  );
+  res.json(blog);
+});
+
+// Add comment
+router.post("/:id/comment", async (req, res) => {
+  const { user, text } = req.body;
+  const blog = await Blog.findByIdAndUpdate(
+    req.params.id,
+    { $push: { comments: { user, text } } },
+    { new: true }
+  );
+  res.json(blog);
+});
+
+// Analytics Dashboard
+router.get("/analytics", async (req, res) => {
+  const analytics = await Blog.find({}, "title views likes comments");
+  res.json(analytics);
+});
+
 module.exports = router;

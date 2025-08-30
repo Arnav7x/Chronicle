@@ -16,6 +16,17 @@ const blogSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-});
+    views: { type: Number, default: 0 },
+    likes: { type: Number, default: 0 },
+    comments: [
+      {
+        user: String,
+        text: String,
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
+  },
+  { timestamps: true }
+);
 
 module.exports = mongoose.model("Blog", blogSchema);
