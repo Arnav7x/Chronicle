@@ -18,6 +18,7 @@ const BlogDetail = () => {
   // Fetch blog details
   const fetchBlog = async () => {
     try {
+        // ✅ Fix: wrap in backticks for template string
       const res = await api.get(`/blogs/${id}`);
       setBlog(res.data);
       setLikes(res.data.likes || 0);
