@@ -9,6 +9,9 @@ const {
   deleteBlog,
   getBlogById,
 } = require("../controllers/blog.controller");
+const Blog = require("../models/blog");
+
+const blogCtrl = require("../controllers/blog.controller");
 
 const { verifyToken } = require("../middlewares/auth.middleware");
 const User = require("../models/user");
@@ -69,7 +72,7 @@ router.post("/:id/view", async (req, res) => {
     { $inc: { views: 1 } },
     { new: true }
   );
-  res.json(blog);
+  res.json({ views: blog.views });
 });
 
 // Like blog
@@ -79,18 +82,18 @@ router.post("/:id/like", async (req, res) => {
     { $inc: { likes: 1 } },
     { new: true }
   );
-  res.json(blog);
+  res.json({ likes: blog.likes });
 });
 
-// Add comment
+// Comment on blog
 router.post("/:id/comment", async (req, res) => {
-  const { user, text } = req.body;
+  const { text } = req.body;
   const blog = await Blog.findByIdAndUpdate(
     req.params.id,
-    { $push: { comments: { user, text } } },
+    { $push: { comments: text } },
     { new: true }
   );
-  res.json(blog);
+  res.json({ comments: blog.comments });
 });
 
 // Analytics Dashboard
@@ -98,5 +101,14 @@ router.get("/analytics", async (req, res) => {
   const analytics = await Blog.find({}, "title views likes comments");
   res.json(analytics);
 });
+
+// views
+router.put("/:id/views", blogCtrl.incrementViews);
+
+// likes
+router.put("/:id/like", blogCtrl.toggleLike);
+
+// comments
+router.post("/:id/comments", blogCtrl.addComment);
 
 module.exports = router;

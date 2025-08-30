@@ -58,6 +58,7 @@ exports.getApprovedBlogs = async (req, res) => {
   try {
     const blogs = await Blog.find({ status: "approved" })
       .populate("author", "name")
+      .populate("comments.author", "name") // populate comment author names
       .sort({ createdAt: -1 });
     res.json(blogs);
   } catch (err) {
@@ -69,7 +70,9 @@ exports.getApprovedBlogs = async (req, res) => {
 // Get single blog by ID
 exports.getBlogById = async (req, res) => {
   try {
-    const blog = await Blog.findById(req.params.id).populate("author", "name email");
+    const blog = await Blog.findById(req.params.id)
+      .populate("author", "name email")
+      .populate("comments.author", "name email"); // populate comment authors
     if (!blog) return res.status(404).json({ message: "Blog not found" });
 
     if (blog.status !== "approved") {
@@ -195,5 +198,86 @@ exports.deleteBlog = async (req, res) => {
   } catch (err) {
     console.error("Error deleting blog:", err);
     res.status(500).json({ message: "Error deleting blog" });
+  }
+};
+
+// Increment views
+exports.incrementViews = async (req, res) => {
+  try {
+    const blog = await Blog.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { views: 1 } },
+      { new: true }
+    );
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+    res.json(blog);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Toggle like
+exports.toggleLike = async (req, res) => {
+  try {
+    const token = req.cookies.access_token;
+    if (!token) return res.status(401).json({ message: "Not logged in" });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "hackathon_secret");
+    const userId = decoded.id;
+
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    const alreadyLiked = blog.likedBy.includes(userId);
+
+    if (alreadyLiked) {
+      blog.likedBy.pull(userId);
+      blog.likes -= 1;
+    } else {
+      blog.likedBy.push(userId);
+      blog.likes += 1;
+    }
+
+    await blog.save();
+    res.json(blog);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Add comment to blog
+exports.addComment = async (req, res) => {
+  try {
+    const { id } = req.params; // blog id
+    const { text, userId } = req.body;
+
+    if (!text || !userId) {
+      return res.status(400).json({ message: "Text and userId required" });
+    }
+
+    // find user
+    const user = await User.findById(userId).select("name");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const blog = await Blog.findById(id);
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
+    const newComment = {
+      text,
+      author: { _id: user._id, name: user.name },
+      createdAt: new Date(),
+    };
+
+    blog.comments.push(newComment);
+    await blog.save();
+
+    res.json({ comments: blog.comments });
+  } catch (err) {
+    console.error("Error adding comment:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };

@@ -27,6 +27,19 @@ export default function Navbar() {
       <Link to="/" className="text-xl font-bold text-orange-600">
         Chronicle
       </Link>
+      {/* Right Menu */}
+  <div className="flex items-center space-x-6">
+  <Link
+    to="/analytics"
+    className="text-gray-700 hover:text-orange-600 font-medium"
+  >
+    Analytics
+  </Link>
+  <Link
+    to="/"
+    className="text-gray-700 hover:text-orange-600 font-medium"
+  ></Link>
+</div> {/* <-- Add this closing tag here */}
 
       <div className="flex items-center space-x-4">
         <Link to="/" className="text-neutral-700 hover:underline">
