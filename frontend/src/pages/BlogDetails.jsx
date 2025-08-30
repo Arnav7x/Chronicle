@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import api from "../axios"; 
+import api from "../axios";
 import Navbar from "../components/Navbar";
 import { FaEye, FaThumbsUp } from "react-icons/fa";
+import DOMPurify from "dompurify";
 
 const BlogDetail = () => {
   const { id } = useParams();
@@ -18,7 +19,6 @@ const BlogDetail = () => {
   // Fetch blog details
   const fetchBlog = async () => {
     try {
-        // ✅ Fix: wrap in backticks for template string
       const res = await api.get(`/blogs/${id}`);
       setBlog(res.data);
       setLikes(res.data.likes || 0);
@@ -115,10 +115,13 @@ const BlogDetail = () => {
           <span>{new Date(blog.createdAt).toLocaleDateString()}</span>
         </div>
 
-        {/* Content */}
-        <p className="text-lg leading-relaxed text-gray-700 whitespace-pre-line">
-          {blog.content}
-        </p>
+        {/* ✅ Render formatted blog content */}
+        <div
+          className="prose max-w-none text-lg leading-relaxed text-gray-700"
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(blog.content),
+          }}
+        />
 
         {/* Like Button */}
         <div className="flex items-center gap-4 mt-6">
