@@ -1,14 +1,23 @@
+<<<<<<< Updated upstream
 import React, { useContext, useEffect, useState } from "react";
+=======
+import React, { useContext, useState } from "react";
+>>>>>>> Stashed changes
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import api from "../axios";
 
 export default function HomePage() {
   const { user, logout } = useContext(AuthContext);
+<<<<<<< Updated upstream
   const [blogs, setBlogs] = useState([]);
+=======
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+>>>>>>> Stashed changes
 
   const handleLogout = async () => {
     await logout();
+    setIsDropdownOpen(false);
   };
 
   // ✅ fetch approved blogs from backend
@@ -38,15 +47,46 @@ export default function HomePage() {
           </Link>
 
           {user ? (
-            <>
-              <span className="text-neutral-700">Hi, {user.name}</span>
+            <div className="relative">
               <button
-                onClick={handleLogout}
-                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center space-x-1 text-neutral-700 hover:bg-gray-100 px-3 py-2 rounded-md transition"
               >
-                Logout
+                <span>Hi, {user.name}</span>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
               </button>
-            </>
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-neutral-700"
+                  >
+                    Logout
+                  </button>
+                  <button
+                    
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-neutral-700"
+                  >
+                    Settings
+                  </button>
+                  
+                  
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <Link
