@@ -10,7 +10,7 @@ export default function Analytics() {
   const [analytics, setAnalytics] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/blogs/analytics")
+    fetch("https://dochronicle.onrender.com/api/blogs/analytics")
       .then((res) => res.json())
       .then((data) => setAnalytics(data));
   }, []);
