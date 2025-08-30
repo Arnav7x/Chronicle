@@ -20,7 +20,7 @@ export default function Navbar() {
       <div className="space-x-4">
         {user ? (
           <>
-            <span>Welcome, {user.name} 🎉</span>
+            <span>Welcome, {user.name} </span>
             <button
               onClick={handleLogout}
               className="bg-red-500 px-3 py-1 rounded-lg hover:bg-red-600 transition"

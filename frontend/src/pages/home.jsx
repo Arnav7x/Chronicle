@@ -11,7 +11,6 @@ export default function HomePage() {
     await logout();
   };
 
-  // ✅ fetch approved blogs from backend
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
@@ -26,7 +25,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white text-neutral-800">
-      {/* ✅ Navbar (no Create Post button here) */}
       <header className="flex justify-between items-center px-8 py-4 border-b">
         <Link to="/" className="text-xl font-bold text-orange-600">
           Chronicle
@@ -40,6 +38,17 @@ export default function HomePage() {
           {user ? (
             <>
               <span className="text-neutral-700">Hi, {user.name}</span>
+
+              {/* ✅ Only admin sees dashboard link */}
+              {user.role === "admin" && (
+                <Link
+                  to="/admin"
+                  className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md"
+                >
+                  Dashboard
+                </Link>
+              )}
+
               <button
                 onClick={handleLogout}
                 className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
@@ -66,7 +75,6 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* ✅ Create Post button now in the body */}
       {user && (
         <div className="px-8 py-6 max-w-6xl mx-auto flex justify-end">
           <Link
@@ -78,7 +86,6 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* ✅ Homepage hero */}
       <section className="text-center py-12">
         <h2 className="text-4xl font-bold mb-4">Chronicle</h2>
         <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
@@ -87,7 +94,6 @@ export default function HomePage() {
         </p>
       </section>
 
-      {/* ✅ Show approved blogs from DB */}
       <section className="px-8 max-w-6xl mx-auto">
         <h3 className="text-xl font-semibold mb-6">Latest Articles</h3>
 
