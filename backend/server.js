@@ -13,6 +13,15 @@ connectDB();
 
 const app = express();
 
+// Debug invalid route paths
+const oldUse = app.use;
+app.use = function (path, ...handlers) {
+  if (typeof path === "string" && path.startsWith("http")) {
+    console.error("❌ Invalid route path detected:", path);
+  }
+  return oldUse.call(this, path, ...handlers);
+};
+
 // Seed default admin if not exists
 async function seedAdmin() {
   const existingAdmin = await User.findOne({ role: "admin" });
