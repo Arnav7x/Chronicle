@@ -1,31 +1,29 @@
-<<<<<<< Updated upstream
-import React, { useContext, useEffect, useState } from "react";
-=======
-import React, { useContext, useState } from "react";
->>>>>>> Stashed changes
+import React, { useContext, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import api from "../axios";
 
 export default function HomePage() {
   const { user, logout } = useContext(AuthContext);
-<<<<<<< Updated upstream
-  const [blogs, setBlogs] = useState([]);
-=======
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
->>>>>>> Stashed changes
+  const [blogs, setBlogs] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredBlogs, setFilteredBlogs] = useState([]);
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+  const [filterOption, setFilterOption] = useState("newest");
 
   const handleLogout = async () => {
     await logout();
     setIsDropdownOpen(false);
   };
 
-  // ✅ fetch approved blogs from backend
+  // Fetch approved blogs from backend
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
         const res = await api.get("/blogs");
         setBlogs(res.data);
+        setFilteredBlogs(res.data);
       } catch (err) {
         console.error("Error fetching blogs:", err);
       }
@@ -33,9 +31,30 @@ export default function HomePage() {
     fetchBlogs();
   }, []);
 
+  // Filter and sort blogs based on search query and filter option
+  useEffect(() => {
+    let filtered = blogs.filter(
+      (blog) =>
+        blog.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        blog.content.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    if (filterOption === "newest") {
+      filtered = filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } else if (filterOption === "oldest") {
+      filtered = filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    } else if (filterOption === "author") {
+      filtered = filtered.sort((a, b) => 
+        (a.author?.name || "").localeCompare(b.author?.name || "")
+      );
+    }
+
+    setFilteredBlogs(filtered);
+  }, [searchQuery, blogs, filterOption]);
+
   return (
     <div className="min-h-screen bg-white text-neutral-800">
-      {/* ✅ Navbar (no Create Post button here) */}
+      {/* Navbar */}
       <header className="flex justify-between items-center px-8 py-4 border-b">
         <Link to="/" className="text-xl font-bold text-orange-600">
           Chronicle
@@ -47,7 +66,16 @@ export default function HomePage() {
           </Link>
 
           {user ? (
-            <div className="relative">
+            <div className="relative flex items-center space-x-4">
+              {/* Admin dashboard link */}
+              {user.role === "admin" && (
+                <Link
+                  to="/admin"
+                  className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md"
+                >
+                  Dashboard
+                </Link>
+              )}
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="flex items-center space-x-1 text-neutral-700 hover:bg-gray-100 px-3 py-2 rounded-md transition"
@@ -69,7 +97,7 @@ export default function HomePage() {
                 </svg>
               </button>
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg">
+                <div className="absolute right-0 top-12 w-48 bg-white text-black rounded-lg shadow-lg">
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-neutral-700"
@@ -77,13 +105,10 @@ export default function HomePage() {
                     Logout
                   </button>
                   <button
-                    
                     className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-neutral-700"
                   >
                     Settings
                   </button>
-                  
-                  
                 </div>
               )}
             </div>
@@ -106,7 +131,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* ✅ Create Post button now in the body */}
+      {/* Create Post button */}
       {user && (
         <div className="px-8 py-6 max-w-6xl mx-auto flex justify-end">
           <Link
@@ -118,7 +143,7 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* ✅ Homepage hero */}
+      {/* Homepage hero */}
       <section className="text-center py-12">
         <h2 className="text-4xl font-bold mb-4">Chronicle</h2>
         <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
@@ -127,15 +152,79 @@ export default function HomePage() {
         </p>
       </section>
 
-      {/* ✅ Show approved blogs from DB */}
+      {/* Blog section with search bar and filter button */}
       <section className="px-8 max-w-6xl mx-auto">
-        <h3 className="text-xl font-semibold mb-6">Latest Articles</h3>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-semibold">Latest Articles</h3>
+          <div className="flex items-center space-x-4">
+            <input
+              type="text"
+              placeholder="Search blogs..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="px-4 py-2 border rounded-md text-neutral-700 focus:outline-none focus:ring-2 focus:ring-orange-500 w-64"
+            />
+            <div className="relative">
+              <button
+                onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+                className="flex items-center space-x-1 text-neutral-700 hover:bg-gray-100 px-3 py-2 rounded-md border transition"
+              >
+                <span>Filter</span>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              {isFilterDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg">
+                  <button
+                    onClick={() => {
+                      setFilterOption("newest");
+                      setIsFilterDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-neutral-700"
+                  >
+                    Newest First
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFilterOption("oldest");
+                      setIsFilterDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-neutral-700"
+                  >
+                    Oldest First
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFilterOption("author");
+                      setIsFilterDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-neutral-700"
+                  >
+                    By Author
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
-        {blogs.length === 0 ? (
-          <p className="text-neutral-500">No blogs published yet.</p>
+        {filteredBlogs.length === 0 ? (
+          <p className="text-neutral-500">No blogs found.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {blogs.map((blog) => (
+            {filteredBlogs.map((blog) => (
               <div key={blog._id} className="shadow-sm border rounded-2xl p-6">
                 <h4 className="text-lg font-semibold mb-2">{blog.title}</h4>
                 <p className="text-sm text-neutral-600 mb-4">
