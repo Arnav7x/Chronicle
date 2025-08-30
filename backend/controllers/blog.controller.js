@@ -2,7 +2,7 @@ const Blog = require("../models/blog");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 
-// ✅ User: submit new blog (goes to pending, author auto-detected from token)
+// User: submit new blog (goes to pending, author auto-detected)
 exports.createBlog = async (req, res) => {
   try {
     const token = req.cookies.access_token;
@@ -17,11 +17,11 @@ exports.createBlog = async (req, res) => {
       return res.status(400).json({ message: "Title and content are required" });
     }
 
-    const blog = new Blog({ 
-      title, 
-      content, 
-      author: user._id, 
-      status: "pending" 
+    const blog = new Blog({
+      title,
+      content,
+      author: user._id,
+      status: "pending",
     });
 
     await blog.save();
@@ -32,7 +32,7 @@ exports.createBlog = async (req, res) => {
   }
 };
 
-// ✅ Homepage: fetch only approved blogs
+// Homepage: fetch only approved blogs
 exports.getApprovedBlogs = async (req, res) => {
   try {
     const blogs = await Blog.find({ status: "approved" })
@@ -45,7 +45,24 @@ exports.getApprovedBlogs = async (req, res) => {
   }
 };
 
-// ✅ Admin: view pending blogs
+// Get single blog by ID
+exports.getBlogById = async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id).populate("author", "name email");
+    if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    if (blog.status !== "approved") {
+      return res.status(403).json({ message: "This blog is not public" });
+    }
+
+    res.json(blog);
+  } catch (err) {
+    console.error("Error fetching blog:", err);
+    res.status(500).json({ message: "Error fetching blog" });
+  }
+};
+
+// Admin: view pending blogs
 exports.getPendingBlogs = async (req, res) => {
   try {
     const blogs = await Blog.find({ status: "pending" })
@@ -58,7 +75,7 @@ exports.getPendingBlogs = async (req, res) => {
   }
 };
 
-// ✅ Admin: approve blog
+// Admin: approve blog
 exports.approveBlog = async (req, res) => {
   try {
     const blog = await Blog.findByIdAndUpdate(
@@ -74,7 +91,7 @@ exports.approveBlog = async (req, res) => {
   }
 };
 
-// ✅ Admin: reject blog
+// Admin: reject blog
 exports.rejectBlog = async (req, res) => {
   try {
     const blog = await Blog.findByIdAndUpdate(
@@ -90,7 +107,7 @@ exports.rejectBlog = async (req, res) => {
   }
 };
 
-// ✅ Admin: hide blog (doesn’t delete, just hides from homepage)
+// Admin: hide blog
 exports.hideBlog = async (req, res) => {
   try {
     const blog = await Blog.findByIdAndUpdate(
@@ -106,7 +123,7 @@ exports.hideBlog = async (req, res) => {
   }
 };
 
-// ✅ Admin: delete blog permanently
+// Admin: delete blog
 exports.deleteBlog = async (req, res) => {
   try {
     const blog = await Blog.findByIdAndDelete(req.params.id);

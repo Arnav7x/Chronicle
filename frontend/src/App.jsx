@@ -6,17 +6,24 @@ import { Toaster } from "react-hot-toast";
 import HomePage from "./pages/home";
 import CreateBlog from "./pages/CreateBlog";
 import AdminDashboard from "./pages/AdminDashboard";
-import AdminRoute from "./components/AdminRoutes";   // ✅ new
+import AdminRoute from "./components/AdminRoutes";   // ✅ protect admin
+import BlogDetails from "./pages/BlogDetails";       // ✅ new page
 
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/blog/:id" element={<BlogDetails />} /> {/* ✅ blog details */}
+
+          {/* Authenticated user routes */}
           <Route path="/create" element={<CreateBlog />} />
+
+          {/* Admin-only route */}
           <Route
             path="/admin"
             element={
@@ -27,6 +34,8 @@ export default function App() {
           />
         </Routes>
       </BrowserRouter>
+
+      {/* Notifications */}
       <Toaster position="top-right" reverseOrder={false} />
     </AuthProvider>
   );
