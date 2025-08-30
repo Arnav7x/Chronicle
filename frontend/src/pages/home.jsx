@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import BlogCard from "../components/BlogCard";   
+import BlogCard from "../components/BlogCard";
+import Footer from "../components/Footer"; // <-- Import Footer
 import api from "../axios";
 import { AuthContext } from "../context/AuthContext";
 
@@ -47,100 +48,105 @@ export default function HomePage() {
   }, [searchQuery, blogs, filterOption]);
 
   return (
-    <div className="min-h-screen bg-white text-neutral-800">
+    <div className="min-h-screen flex flex-col bg-white text-neutral-800">
       <Navbar />
 
-      <section className="py-12 px-4 text-center border-b">
-        <div className="max-w-2xl mx-auto flex items-center justify-center space-x-3">
-          <input
-            type="text"
-            placeholder="Search blogs..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 px-4 py-2 border rounded-md text-neutral-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
-          />
-          <div className="relative">
-            <button
-              onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
-              className="flex items-center space-x-1 text-neutral-700 hover:bg-gray-100 px-3 py-2 rounded-md border transition"
-            >
-              <span>Filter</span>
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
+      <main className="flex-grow">
+        <section className="py-12 px-4 text-center border-b">
+          {/* Search & Filter Section */}
+          <div className="max-w-2xl mx-auto flex items-center justify-center space-x-3">
+            <input
+              type="text"
+              placeholder="Search blogs..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-1 px-4 py-2 border rounded-md text-neutral-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+            <div className="relative">
+              <button
+                onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+                className="flex items-center space-x-1 text-neutral-700 hover:bg-gray-100 px-3 py-2 rounded-md border transition"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {isFilterDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg">
-                <button
-                  onClick={() => {
-                    setFilterOption("newest");
-                    setIsFilterDropdownOpen(false);
-                  }}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-neutral-700"
+                <span>Filter</span>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  Newest First
-                </button>
-                <button
-                  onClick={() => {
-                    setFilterOption("oldest");
-                    setIsFilterDropdownOpen(false);
-                  }}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-neutral-700"
-                >
-                  Oldest First
-                </button>
-                <button
-                  onClick={() => {
-                    setFilterOption("author");
-                    setIsFilterDropdownOpen(false);
-                  }}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-neutral-700"
-                >
-                  By Author
-                </button>
-              </div>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {isFilterDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg">
+                  <button
+                    onClick={() => {
+                      setFilterOption("newest");
+                      setIsFilterDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-neutral-700"
+                  >
+                    Newest First
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFilterOption("oldest");
+                      setIsFilterDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-neutral-700"
+                  >
+                    Oldest First
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFilterOption("author");
+                      setIsFilterDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-neutral-700"
+                  >
+                    By Author
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {user && (
+              <Link
+                to="/create"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-md"
+              >
+                Create Post
+              </Link>
             )}
           </div>
 
-          {user && (
-            <Link
-              to="/create"
-              className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-md"
-            >
-              Create Post
-            </Link>
+          {filteredBlogs.length === 0 && (
+            <div className="mt-12 text-center">
+              <h2 className="text-4xl font-bold mb-4">Chronicle</h2>
+              <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
+                Thoughtful articles on design, development, and digital experiences.
+                <br />
+                Discover insights that matter.
+              </p>
+            </div>
           )}
-        </div>
-
-        {filteredBlogs.length === 0 && (
-          <div className="mt-12 text-center">
-            <h2 className="text-4xl font-bold mb-4">Chronicle</h2>
-            <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
-              Thoughtful articles on design, development, and digital experiences.
-              <br />
-              Discover insights that matter.
-            </p>
-          </div>
-        )}
-      </section>
-
-      {/* Blogs Section */}
-      {filteredBlogs.length > 0 && (
-        <section className="px-8 max-w-6xl mx-auto mt-8">
-          <h3 className="text-xl font-semibold mb-6">Latest Articles</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredBlogs.map((blog) => (
-              <BlogCard key={blog._id} blog={blog} /> 
-            ))}
-          </div>
         </section>
-      )}
+
+        {/* Blogs Section */}
+        {filteredBlogs.length > 0 && (
+          <section className="px-8 max-w-6xl mx-auto mt-8">
+            <h3 className="text-xl font-semibold mb-6">Latest Articles</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredBlogs.map((blog) => (
+                <BlogCard key={blog._id} blog={blog} /> 
+              ))}
+            </div>
+          </section>
+        )}
+      </main>
+
+      <Footer />
     </div>
   );
 }
