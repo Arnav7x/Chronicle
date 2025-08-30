@@ -34,7 +34,5 @@ router.patch("/:id/reject", verifyToken, isAdmin, rejectBlog);
 router.patch("/:id/hide", verifyToken, isAdmin, hideBlog);
 router.delete("/:id", verifyToken, isAdmin, deleteBlog);
 
-// -------- Analytics (Admin) --------
-router.get("/analytics/all", verifyToken, isAdmin, getAnalytics);
 
 module.exports = router;
