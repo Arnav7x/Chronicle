@@ -1,6 +1,7 @@
 const Blog = require("../models/blog");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const sendEmail = require("../utils/mailer"); // ✅ import mailer
 
 // User: submit new blog (goes to pending, author auto-detected)
 exports.createBlog = async (req, res) => {
@@ -25,6 +26,26 @@ exports.createBlog = async (req, res) => {
     });
 
     await blog.save();
+
+    // ✅ In-app notification
+    await user.updateOne({
+      $push: {
+        notifications: {
+          message: `Your blog "${title}" has been submitted and is pending approval.`,
+        },
+      },
+    });
+
+    // ✅ Email
+    await sendEmail(
+      user.email,
+      "Blog Submitted - Pending Approval",
+      `Hi ${user.name}, your blog "${title}" has been submitted and is pending admin approval.`,
+      `<h2>Hi ${user.name},</h2>
+       <p>Your blog <strong>"${title}"</strong> has been submitted and is pending admin approval.</p>
+       <p>We’ll notify you once it’s reviewed ✅</p>`
+    );
+
     res.json({ message: "Blog submitted for review", blog });
   } catch (err) {
     console.error("Error creating blog:", err);
@@ -82,8 +103,29 @@ exports.approveBlog = async (req, res) => {
       req.params.id,
       { status: "approved" },
       { new: true }
-    );
+    ).populate("author", "name email");
+
     if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    // ✅ In-app notification
+    await User.findByIdAndUpdate(blog.author._id, {
+      $push: {
+        notifications: {
+          message: `✅ Your blog "${blog.title}" has been approved and is now live!`,
+        },
+      },
+    });
+
+    // ✅ Email
+    await sendEmail(
+      blog.author.email,
+      "Blog Approved ✅",
+      `Hi ${blog.author.name}, your blog "${blog.title}" has been approved and is now live!`,
+      `<h2>Hi ${blog.author.name},</h2>
+       <p>Good news! 🎉 Your blog <strong>"${blog.title}"</strong> has been approved and is now live.</p>
+       <p>Thanks for contributing to Chronicle Blogs 🚀</p>`
+    );
+
     res.json({ message: "Blog approved", blog });
   } catch (err) {
     console.error("Error approving blog:", err);
@@ -98,8 +140,29 @@ exports.rejectBlog = async (req, res) => {
       req.params.id,
       { status: "rejected" },
       { new: true }
-    );
+    ).populate("author", "name email");
+
     if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+    // ✅ In-app notification
+    await User.findByIdAndUpdate(blog.author._id, {
+      $push: {
+        notifications: {
+          message: `❌ Your blog "${blog.title}" was rejected.`,
+        },
+      },
+    });
+
+    // ✅ Email
+    await sendEmail(
+      blog.author.email,
+      "Blog Rejected ❌",
+      `Hi ${blog.author.name}, unfortunately your blog "${blog.title}" was rejected.`,
+      `<h2>Hi ${blog.author.name},</h2>
+       <p>Unfortunately, your blog <strong>"${blog.title}"</strong> was rejected ❌.</p>
+       <p>You can review and resubmit with updates.</p>`
+    );
+
     res.json({ message: "Blog rejected", blog });
   } catch (err) {
     console.error("Error rejecting blog:", err);

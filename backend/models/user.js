@@ -8,8 +8,15 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     enum: ["user", "moderator", "admin"],
-    default: "user"   // ✅ every new signup becomes a user
-  }
+    default: "user"
+  },
+  notifications: [   // ✅ New field
+    {
+      message: String,
+      createdAt: { type: Date, default: Date.now },
+      read: { type: Boolean, default: false }
+    }
+  ]
 });
 
 // hash password before save

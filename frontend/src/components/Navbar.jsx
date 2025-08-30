@@ -3,13 +3,24 @@ import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 export default function Navbar() {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, loading } = useContext(AuthContext);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
     setIsDropdownOpen(false);
   };
+
+  if (loading) {
+    // ✅ prevents flicker before user is loaded
+    return (
+      <header className="flex justify-between items-center px-8 py-4 border-b">
+        <Link to="/" className="text-xl font-bold text-orange-600">
+          Chronicle
+        </Link>
+      </header>
+    );
+  }
 
   return (
     <header className="flex justify-between items-center px-8 py-4 border-b">

@@ -10,16 +10,23 @@ const signup = async (req, res) => {
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ message: "Email already in use" });
 
-    const user = new User({ name, email, password, role: "user" }); // ✅ role added
+    const user = new User({ name, email, password, role: "user" }); // default role = user
     await user.save();
 
-    return res.status(201).json({ message: "Signup successful" });
+    return res.status(201).json({
+      message: "Signup successful",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role, // ✅ include role
+      },
+    });
   } catch (err) {
     console.error("Signup error:", err);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
-
 
 // Login
 const login = async (req, res) => {
@@ -40,12 +47,17 @@ const login = async (req, res) => {
     res.cookie("access_token", token, {
       httpOnly: true,
       sameSite: "lax",
-      secure: false, 
+      secure: false,
     });
 
     return res.json({
       message: "Login successful 🎉",
-      user: { id: user._id, name: user.name, email: user.email }
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role, // ✅ include role
+      },
     });
   } catch (err) {
     console.error("Login error:", err);
@@ -64,7 +76,14 @@ const me = async (req, res) => {
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    res.json(user);
+    // ✅ make sure role is included
+    res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      notifications: user.notifications || [],
+    });
   } catch (err) {
     res.status(401).json({ message: "Unauthorized" });
   }

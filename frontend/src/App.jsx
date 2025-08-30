@@ -20,7 +20,7 @@ export default function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
           <Route path="/analytics" element={<Analytics />} />
-          <Route path="/blog/:id" element={<BlogDetails />} /> {/* ✅ blog details */}
+          <Route path="/blog/:id" element={<BlogDetails />} />
 
           {/* Authenticated user routes */}
           <Route path="/create" element={<CreateBlog />} />
