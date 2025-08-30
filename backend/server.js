@@ -34,7 +34,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use(cors({
-  origin: "https://cchronicle.netlify.app/",
+  origin: "https://cchronicle.netlify.app",
   credentials: true,
 }));
 
